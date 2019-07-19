@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace XmlParser
 {
@@ -13,56 +14,78 @@ namespace XmlParser
     {
         static void Main(string[] args)
         {
-            //XmlDocument doc = new XmlDocument();
-            //var settings = new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment };
+            string sedas_Endex = $@"C:\Users\msft_\Desktop\HAYEN\TASKS\SEDAS-XMLPARSER\sedas_Ro_1_tld.xml";
+            string sedas_LoadProfile = $@"C:\Users\msft_\Desktop\HAYEN\TASKS\SEDAS-XMLPARSER\sedas_lp_1_btm.xml";
 
-            string filePath = $@"C:\Users\example.xml";
-            //FileInfo file = new FileInfo(filePath);
+            //for endex
+            string meterId = "metering-point-id";
+            string valueId = "value-id";
+            string timespan = "timestamp";
+            string element = "register";
 
-            //using (XmlReader reader=XmlReader.Create(filePath))
-            //{
-            //    while (reader.Read())
-            //    {
-            //      var c= reader.GetAttribute("register");
+            //for load Profile
+            string locKey = "Loc-Key";
+            string custKey = "Cust-Key";
+            string profileDate = "START-DATETIME";
+            string interval = "INTERVAL";
+            string value = "V";
 
-            //        if (c.)
-            //        {
-
-            //        }
-            //        Console.ReadLine();
-            //    }
-            //}
+            Dictionary<DateTime, int> values = new Dictionary<DateTime, int>();
 
 
-            XDocument doc = XDocument.Load(filePath);
-            var register = doc.Root.Elements().Select(t => t.Element("register"));
-            var registers = doc.Descendants("register");
-            var elemnts = doc.Elements().Select(t=>t.Element("registers"));
+            //endex parser
+            XDocument endexDoc = XDocument.Load(sedas_Endex);
 
-            //foreach (var item in elemnts)
-            //{
-            //    XNode s;
-            //    if (item!=null)
-            //     if(item.HasAttributes)
-            //         s = item.FirstNode;
-            //}
-
-            foreach (var item in registers)
+            var registers = endexDoc.Descendants(element).Select(t => new
             {
-                var nodes = item.Nodes();
-                foreach (XElement node in nodes)
-                {
-                    var x = node.Value;
-                    
-                    XNode xs = node;
-                   
-                }
-                var s = item.Value;
-                
-            }
+                EtsoCode = t.Attribute(meterId).Value, Values = t.Attribute(valueId).Value, EndexDate = t.Attribute(timespan).Value
+            });
 
 
+            var endex = registers.GroupBy(t => new
+            {
+                t.EtsoCode,
+                t.EndexDate
+            }).Select(s => new
+            {
+                MeterId=s.Key.EtsoCode,
+                EndexDate=s.Key.EndexDate,
+                ValueId=s.Select(t=>t.Values).ToList()
+            });
+
+
+            //load profle parser
+            XDocument loadDoc = XDocument.Load(sedas_LoadProfile);
+
+            XNamespace adlcp = "http://example.com/adlcp";
+
+            var adta = loadDoc.Descendants(sedas_LoadProfile);
+
+            var sadsa = adta.Elements();
+            //var data = loadDoc.Descendants(sedas_LoadProfile).Elements("DATA").Select(t => new
+            //{
+            //    EtsoCode = t.Element(locKey).Value,
+            //    Name = t.Element(custKey).Value
+            //});
+
+            //var data = loadDoc.Descendants(sedas_LoadProfile).ToList();
+
+            //List<LoadProfile> loadProfiles = new List<LoadProfile>();
+
+            //foreach (var item in data)
+            //{
+            //    LoadProfile profile = new LoadProfile();
+
+
+
+            //    profile.EtsoCode = item.Element(locKey).Value;
+            //    profile.Name = item.Element(custKey).Value;
+            //    profile.Values.Add()
+
+            //}
 
         }
+
     }
 }
+
